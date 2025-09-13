@@ -4,7 +4,7 @@ import torch
 from jaxtyping import Float
 from torch import Tensor
 
-from .types import Pair, sanitize_pair
+from .types import sanitize_pair
 
 
 @runtime_checkable
@@ -19,8 +19,8 @@ class ConversionFunction(Protocol):
 def generate_conversions(
     shape: tuple[int, int],
     device: torch.device,
-    x_range: Optional[Pair] = None,
-    y_range: Optional[Pair] = None,
+    x_range = None,
+    y_range = None,
 ) -> tuple[
     ConversionFunction,  # conversion from world coordinates to pixel coordinates
     ConversionFunction,  # conversion from pixel coordinates to world coordinates

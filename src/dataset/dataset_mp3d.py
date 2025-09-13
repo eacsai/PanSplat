@@ -88,7 +88,7 @@ class DatasetMP3D(Dataset):
         for root, test_dataset in zip(self.roots, cfg.test_datasets):
             if not os.path.exists(root):
                 continue
-            scenes = os.listdir(root)
+            scenes = [f for f in os.listdir(root) if "DS_Store" not in f]
             scenes.sort()
             for s in scenes:
                 data.append({
@@ -110,7 +110,7 @@ class DatasetMP3D(Dataset):
         data = self.data[idx].copy()
         scene = data['scene_id']
         scene_path = data['root'] / scene
-        views = os.listdir(scene_path)
+        views = [f for f in os.listdir(scene_path) if "DS_Store" not in f]
         views.sort()
 
         # Load the images.
@@ -250,6 +250,21 @@ class DatasetMP3D(Dataset):
             image = image.resize(self.cfg.image_shape[::-1], Image.LANCZOS)
             torch_images.append(self.to_tensor(image))
         return torch.stack(torch_images)
+
+    def convert_depths(
+        self,
+        depths,
+    ):
+        torch_depths = []
+        for depth in depths:
+            depth = np.load(depth)
+            depth = torch.tensor(depth, dtype=torch.float32)
+            torch_depths.append(depth)
+        return F.interpolate(torch.stack(torch_depths),
+                             size=self.cfg.image_shape[::1], 
+                             mode='bilinear', 
+                             align_corners=False
+                             )
 
     def get_bound(
         self,

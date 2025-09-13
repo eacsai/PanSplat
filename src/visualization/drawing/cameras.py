@@ -8,7 +8,7 @@ from torch import Tensor
 from ...geometry.projection import unproject_pers
 from ..annotation import add_label
 from .lines import draw_lines
-from .types import Scalar, sanitize_scalar
+from .types import sanitize_scalar
 
 
 def draw_cameras(
@@ -16,8 +16,8 @@ def draw_cameras(
     extrinsics: Float[Tensor, "batch 4 4"],
     intrinsics: Float[Tensor, "batch 3 3"],
     color: Float[Tensor, "batch 3"],
-    near: Optional[Scalar] = None,
-    far: Optional[Scalar] = None,
+    near = None,
+    far = None,
     margin: float = 0.1,  # relative to AABB
     frustum_scale: float = 0.05,  # relative to image resolution
 ) -> Float[Tensor, "3 3 height width"]:
@@ -123,8 +123,8 @@ def draw_cameras(
 def compute_aabb(
     extrinsics: Float[Tensor, "batch 4 4"],
     intrinsics: Float[Tensor, "batch 3 3"],
-    near: Optional[Scalar] = None,
-    far: Optional[Scalar] = None,
+    near = None,
+    far = None,
 ) -> tuple[
     Float[Tensor, "3"],  # minima of the scene
     Float[Tensor, "3"],  # maxima of the scene

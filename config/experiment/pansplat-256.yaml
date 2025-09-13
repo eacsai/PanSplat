@@ -10,4 +10,4 @@ wandb:
 
 data_loader:
   train:
-    batch_size: 6
+    batch_size: 2

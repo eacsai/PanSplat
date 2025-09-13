@@ -7,18 +7,18 @@ from torch import Tensor
 
 from .coordinate_conversion import generate_conversions
 from .rendering import render_over_image
-from .types import Pair, Scalar, Vector, sanitize_scalar, sanitize_vector
+from .types import sanitize_scalar, sanitize_vector
 
 
 def draw_points(
     image: Float[Tensor, "3 height width"],
-    points: Vector,
-    color: Vector = [1, 1, 1],
-    radius: Scalar = 1,
-    inner_radius: Scalar = 0,
+    points,
+    color = [1, 1, 1],
+    radius = 1,
+    inner_radius = 0,
     num_msaa_passes: int = 1,
-    x_range: Optional[Pair] = None,
-    y_range: Optional[Pair] = None,
+    x_range = None,
+    y_range = None,
 ) -> Float[Tensor, "3 height width"]:
     device = image.device
     points = sanitize_vector(points, 2, device)
@@ -38,8 +38,8 @@ def draw_points(
     points = world_to_pixel(points)
 
     def color_function(
-        xy: Float[Tensor, "point 2"],
-    ) -> Float[Tensor, "point 4"]:
+        xy,
+    ):
         # Define a vector between the start and end points.
         delta = xy[:, None] - points[None]
         delta_norm = delta.norm(dim=-1)

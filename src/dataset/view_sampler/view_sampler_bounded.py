@@ -39,12 +39,37 @@ class ViewSamplerBounded(ViewSampler[ViewSamplerBoundedCfg]):
         Int64[Tensor, " target_view"] | None,  # indices for target views
     ]:
         num_views, _, _ = extrinsics.shape
+        context_gap = 2
+
+        # Pick the left and right context indices.
+
+        if self.stage == "test":
+            index_context_left = (num_views - context_gap - 1) * (i+1) / max((100 + 1), 1)
+            index_context_left = int(index_context_left)
+        else:
+            index_context_left = torch.randint(context_gap, (num_views - context_gap - 1), (1,)).item()
+
+        return (
+            torch.tensor((index_context_left, index_context_left)),
+            torch.tensor((index_context_left - context_gap // 2, index_context_left + context_gap // 2)),
+        )
+
+    def two_sample(
+        self,
+        scene: str,
+        extrinsics: Float[Tensor, "view 4 4"],
+        device: torch.device = torch.device("cpu"),
+        i: int = 0,
+    ) -> tuple[
+        Int64[Tensor, " context_view"] | None,  # indices for context views
+        Int64[Tensor, " target_view"] | None,  # indices for target views
+    ]:
+        num_views, _, _ = extrinsics.shape
 
         # Compute the context view spacing based on the current global step.
         if self.stage == "test":
             # When testing, always use the full gap.
-            min_gap = max_gap = (self.cfg.max_distance_between_context_views
-                                 + self.cfg.min_distance_between_context_views) // 2
+            min_gap = max_gap = 5
         elif self.cfg.warm_up_steps > 0:
             max_gap = self.schedule(
                 self.cfg.initial_max_distance_between_context_views,
@@ -102,6 +127,12 @@ class ViewSamplerBounded(ViewSampler[ViewSamplerBoundedCfg]):
                 index_context_right + 1,
                 device=device,
             )
+
+            # index_target = torch.arange(
+            #     index_context_left + 1,
+            #     index_context_right,
+            #     device=device,
+            # )
 
             # # When testing, pick the middle view.
             # index_target = torch.tensor(

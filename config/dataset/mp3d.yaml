@@ -2,7 +2,7 @@ defaults:
   - view_sampler: bounded
 
 name: mp3d
-roots: [datasets/pano_grf]
+roots: [/data/qiwei/nips25/pano_grf]
 make_baseline_1: false
 augment: true
 

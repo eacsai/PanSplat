@@ -7,19 +7,19 @@ from torch import Tensor
 
 from .coordinate_conversion import generate_conversions
 from .rendering import render_over_image
-from .types import Pair, Scalar, Vector, sanitize_scalar, sanitize_vector
+from .types import sanitize_scalar, sanitize_vector
 
 
 def draw_lines(
-    image: Float[Tensor, "3 height width"],
-    start: Vector,
-    end: Vector,
-    color: Vector,
-    width: Scalar,
-    cap: Literal["butt", "round", "square"] = "round",
-    num_msaa_passes: int = 1,
-    x_range: Optional[Pair] = None,
-    y_range: Optional[Pair] = None,
+    image,
+    start,
+    end,
+    color,
+    width,
+    cap = "round",
+    num_msaa_passes = 1,
+    x_range = None,
+    y_range = None,
 ) -> Float[Tensor, "3 height width"]:
     device = image.device
     start = sanitize_vector(start, 2, device)
@@ -40,8 +40,8 @@ def draw_lines(
     end = world_to_pixel(end)
 
     def color_function(
-        xy: Float[Tensor, "point 2"],
-    ) -> Float[Tensor, "point 4"]:
+        xy,
+    ):
         # Define a vector between the start and end points.
         delta = end - start
         delta_norm = delta.norm(dim=-1, keepdim=True)
