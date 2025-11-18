@@ -35,7 +35,7 @@ d_feature: [128, 96, 64, 32]
 
 visualizer:
   num_samples: 8
-  min_resolution: 256
+  min_resolution: 160
   export_ply: false
 
 # params for multi-view depth predictor

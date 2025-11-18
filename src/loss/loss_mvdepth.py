@@ -8,7 +8,7 @@ from ..dataset.types import BatchedExample
 from .loss import Loss
 
 from einops import rearrange
-
+import torch
 
 @dataclass
 class LossMVDepthCfg:
@@ -31,7 +31,11 @@ class LossMVDepth(Loss[LossMVDepthCfg, LossMVDepthCfgWrapper]):
     ) -> Float[Tensor, ""]:
         mvs_outputs = encoder_outputs['mvs_outputs']
         depth_gt = batch['context']['depth']
-        mask_gt = batch['context']['mask']
+        # Create mask if not provided (assume all pixels are valid)
+        if 'mask' in batch['context']:
+            mask_gt = batch['context']['mask']
+        else:
+            mask_gt = torch.ones_like(depth_gt, dtype=torch.bool).to(depth_gt.device)  # All pixels are valid
         depth_loss = 0.0
         if 'stages' in mvs_outputs:
             n_predictions = len([s for s in mvs_outputs['stages'] if 'depth' in s])

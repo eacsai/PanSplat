@@ -6,8 +6,11 @@ defaults:
 
 wandb:
   name: pansplat
-  tags: [pansplat, mp3d, 256x512]
+  tags: [pansplat, mp3d, 160x320]
 
 data_loader:
   train:
-    batch_size: 1
+    batch_size: 6
+
+dataset:
+  image_shape: [160, 320]

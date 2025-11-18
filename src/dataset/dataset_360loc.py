@@ -131,7 +131,7 @@ class Dataset360Loc(IterableDataset):
                 images = self.convert_images(images)
 
             for i in range(self.times_per_scene):
-                context_indices, target_indices = self.view_sampler.sample(
+                context_indices, target_indices = self.view_sampler.two_sample(
                     scene,
                     extrinsics_orig,
                     i=i,

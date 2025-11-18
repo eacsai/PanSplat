@@ -1,0 +1,17 @@
+# @package _global_
+
+defaults:
+  - /model: pansplat
+  - override /loss: [mse, lpips, mvdepth]
+  - override /dataset: vigor
+
+wandb:
+  name: pansplat-VIGOR
+  tags: [pansplat, VIGOR, 160x320]
+
+data_loader:
+  train:
+    batch_size: 6
+
+dataset:
+  image_shape: [160, 320]

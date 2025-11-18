@@ -136,7 +136,9 @@ def predict(args, model_wrapper, cfg, output_dir, fps):
     ):
         batch = default_collate([batch])
         if "depth" in batch["context"]:
-            del batch["context"]["depth"], batch["context"]["mask"]
+            del batch["context"]["depth"]
+            if "mask" in batch["context"]:
+                del batch["context"]["mask"]
         batch["context"] = apply_to_collection(batch["context"], Tensor, lambda x: x.to(device))
         gaussians_prob = model_wrapper.encoder(batch["context"], inference=True)["gaussians"]["gaussians"]
 

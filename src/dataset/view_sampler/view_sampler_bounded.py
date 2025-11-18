@@ -69,7 +69,7 @@ class ViewSamplerBounded(ViewSampler[ViewSamplerBoundedCfg]):
         # Compute the context view spacing based on the current global step.
         if self.stage == "test":
             # When testing, always use the full gap.
-            min_gap = max_gap = 5
+            min_gap = max_gap = 3
         elif self.cfg.warm_up_steps > 0:
             max_gap = self.schedule(
                 self.cfg.initial_max_distance_between_context_views,

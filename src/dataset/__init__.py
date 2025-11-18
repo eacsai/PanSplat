@@ -4,6 +4,7 @@ from ..misc.step_tracker import StepTracker
 from .dataset_mp3d import DatasetMP3D, DatasetMP3DCfg
 from .dataset_360loc import Dataset360Loc, Dataset360LocCfg
 from .dataset_insta360 import DatasetInsta360, DatasetInsta360Cfg
+from .dataset_vigor import DatasetVIGOR, DatasetVIGORCfg
 from .types import Stage
 from .view_sampler import get_view_sampler
 
@@ -11,10 +12,11 @@ DATASETS: dict[str, Dataset] = {
     "mp3d": DatasetMP3D,
     "360loc": Dataset360Loc,
     "insta360": DatasetInsta360,
+    'vigor': DatasetVIGOR,
 }
 
 
-DatasetCfg = DatasetMP3DCfg | Dataset360LocCfg | DatasetInsta360Cfg
+DatasetCfg = DatasetMP3DCfg | Dataset360LocCfg | DatasetInsta360Cfg | DatasetVIGORCfg
 
 
 def get_dataset(
