@@ -9,7 +9,6 @@ from torch import Tensor
 import numpy as np
 from einops import rearrange
 
-
 @torch.no_grad()
 def compute_psnr(
     ground_truth: Float[Tensor, "batch channel height width"],
@@ -143,11 +142,39 @@ class ImageMetrics:
 
 
 class DepthMetrics:
+
+    def continuity(self, x, gt):
+        # x, gt shape: [N, H, W]
+        s = x[:, :, 0]   # 左边缘
+        e = x[:, :, -1]  # 右边缘
+        s_gt = gt[:, :, 0]
+        e_gt = gt[:, :, -1]
+        
+        # 计算边缘差值的差异
+        diff = torch.abs((s - e) - (s_gt - e_gt)).mean(dim=-1)
+        return diff
+
     def __call__(self, depth_gt, depth_est, mask):
         depth_metrics = {}
+        depth_metrics['depthsim'] = self.continuity(depth_est.squeeze(1), depth_gt.squeeze(1)).mean().item()
         depth_gt = depth_gt[mask]
         depth_est = depth_est[mask]
         depth_metrics['abs_rel'] = ((depth_est - depth_gt).abs() / depth_gt).mean().item()
         depth_metrics['sq_rel'] = (((depth_est - depth_gt) ** 2 / depth_gt).mean()).item()
         depth_metrics['rmse'] = torch.sqrt(((depth_est - depth_gt) ** 2).mean()).item()
+        
+        log_diff = torch.log(depth_est + 1e-8) - torch.log(depth_gt + 1e-8)
+        num_pixels = len(log_diff)
+        # 均方误差 (Mean Squared Error in log space)
+        mse_log = (log_diff ** 2).mean()
+        # 误差均值的平方 (Squared Mean Error in log space)
+        mean_log_sq = (log_diff.mean()) ** 2
+        # SILog = sqrt(E[d^2] - (E[d])^2) * 100
+        depth_metrics['SILog'] = (torch.sqrt(mse_log - mean_log_sq) * 100).item()
+
+        thresh = torch.max((depth_gt / (depth_est + 1e-8)), (depth_est / (depth_gt + 1e-8)))
+        depth_metrics['a1'] = (thresh < 1.25).float().mean().item()
+        depth_metrics['a2'] = (thresh < 1.25 ** 2).float().mean().item()
+        depth_metrics['a3'] = (thresh < 1.25 ** 3).float().mean().item()
+
         return depth_metrics

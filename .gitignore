@@ -168,7 +168,7 @@ cython_debug/
 /lightning_logs
 /checkpoints
 /logs
-
+/logs_good
 .bashrc
 /launcher_venv
 /slurm_logs
@@ -180,3 +180,6 @@ table.tex
 point_clouds*
 assets/*_3views.json
 pyrightconfig.json
+src/model/DepthAnythingV2/*
+
+*.png

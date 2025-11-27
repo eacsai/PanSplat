@@ -333,7 +333,7 @@ class ModelWrapper(LightningModule):
         dis = batch.get("dis", None)
         dis = None if dis is None else dis[0].item()
         if self.test_cfg.compute_scores and 'mvs_outputs' in encoder_outputs \
-                and 'depth' in batch["context"] and name == "m3d" and dis == 0.5:
+                and 'depth' in batch["context"] and name == "m3d":
             depth_gt = rearrange(batch["context"]["depth"], "1 v 1 h w -> 1 v h w")
             depth_est = encoder_outputs["mvs_outputs"]["depth"]
             # Create mask if not provided (assume all pixels are valid)
@@ -344,6 +344,7 @@ class ModelWrapper(LightningModule):
             depth_est = F.interpolate(depth_est, depth_gt.shape[-2:], mode="bilinear", align_corners=False)
             depth_metrics = self.depth_metrics(depth_gt, depth_est, mask)
             for k, m in depth_metrics.items():
+                k = f"{name}_{dis}_{k}" if name is not None else k
                 self.test_step_outputs[k].append(m)
 
         if self.decoder is not None:
@@ -352,14 +353,31 @@ class ModelWrapper(LightningModule):
                 batch["target"]["extrinsics"],
                 batch["target"]["near"],
                 batch["target"]["far"],
-                depth_mode=None,
+                depth_mode='depth',
                 context_extrinsics=batch["context"]["extrinsics"],
             )
 
             (scene,) = batch["scene"]
             path = Path(self.logger.save_dir) / 'test'
             images_prob = output['color'][0]
+            images_depth = output['depth']
             rgb_gt = batch["target"]["image"][0]
+
+            if self.test_cfg.compute_scores and 'mvs_outputs' in encoder_outputs \
+                    and 'depth' in batch["target"] and name == "m3d":
+                depth_gt = rearrange(batch["target"]["depth"], "1 v 1 h w -> 1 v h w")
+                depth_est = images_depth
+                # Create mask if not provided (assume all pixels are valid)
+                if "mask" in batch["target"]:
+                    mask = rearrange(batch["target"]["mask"], "1 v 1 h w -> 1 v h w")
+                else:
+                    mask = torch.ones_like(depth_gt, dtype=torch.bool).to(depth_gt.device)  # All pixels are valid
+                depth_est = F.interpolate(depth_est, depth_gt.shape[-2:], mode="bilinear", align_corners=False)
+                depth_metrics = self.depth_metrics(depth_gt, depth_est, mask)
+                for k, m in depth_metrics.items():
+                    k = f"{name}_{dis}_{k}" if name is not None else k
+                    self.test_step_outputs[k].append(m)
+
 
             # test_img = to_pil_image(output['color'][0, 1].clamp(0, 1))
             # test_img.save('grd.png')
